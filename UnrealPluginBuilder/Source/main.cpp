@@ -5,7 +5,7 @@
 #include <vector>
 #include "BasicTypes.h"
 #include "Filesystem.h"
-#include "Stringhelperfdgdfg.h"
+#include "Stringhelper.h"
 #include "System.h"
 #include "PluginDescriptorFile.h"
 

@@ -117,7 +117,7 @@
     <ClInclude Include="Header\BasicTypes.h" />
     <ClInclude Include="Header\Filesystem.h" />
     <ClInclude Include="Header\PluginDescriptorFile.h" />
-    <ClInclude Include="Header\Stringhelperfdgdfg.h" />
+    <ClInclude Include="Header\Stringhelper.h" />
     <ClInclude Include="Header\System.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

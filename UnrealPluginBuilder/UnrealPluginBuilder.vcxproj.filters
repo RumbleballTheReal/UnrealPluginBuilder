@@ -30,7 +30,7 @@
     <ClInclude Include="Header\PluginDescriptorFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header\Stringhelperfdgdfg.h">
+    <ClInclude Include="Header\Stringhelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
