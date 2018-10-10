@@ -153,6 +153,14 @@ int main(int argCount, char** args)
 			int execRet = 0;
 			execRet = System::Exec(runUATbatch, arguments);
 			cout << "Process returned with " << execRet << endl;
+
+			// In case the build failed
+			if (execRet != 0)
+			{
+				// Remove the output folder for the specific version
+				string rmdirCommand("rmdir");
+				System::Exec(rmdirCommand, outputDir + " /s");
+			}
 		}
 		else
 		{
