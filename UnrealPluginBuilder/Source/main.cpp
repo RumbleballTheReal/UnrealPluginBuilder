@@ -175,16 +175,24 @@ int main(int argCount, char** args)
 			{
 				cout << "Making the out reading for marketplace\n";
 
-				// Remove binaries and intermediate directory from packaged folder
+				// copy the output
+				string copyDir;
+				copyDir.append(workingDirectory).append("\\").append(GetPluginNameFromDirectory(pluginDir));
+				System::Exec("robocopy", outputDir + " " + copyDir + " /s");
+							   
+				// Remove binaries and intermediate directory from copied version
 				string rmdirCommand("rmdir");
-				string binariesDir = outputDir + ("\\Binaries");
-				string intermediateDir = outputDir + ("\\Intermediate");
+				string binariesDir = copyDir + ("\\Binaries");
+				string intermediateDir = copyDir + ("\\Intermediate");
 				System::Exec(rmdirCommand, binariesDir + " /s /q");
 				System::Exec(rmdirCommand, intermediateDir + " /s /q");
 				
 				// zip it up
-				//start powershell "Compress-Archive -Path "C:\Users\vr3\Desktop\test" -DestinationPath C:\Users\vr3\Desktop\test.zip"
-				System::Exec("start", "powershell \"Compress-Archive -Path " + outputDir + " -DestinationPath " + outputDir + ".zip\"");
+				// powershell "Compress-Archive -Path "C:\Users\vr3\Desktop\test" -DestinationPath C:\Users\vr3\Desktop\test.zip"
+				System::Exec("powershell", "\"Compress-Archive -Path " + copyDir + " -DestinationPath " + outputDir + ".zip\"");
+
+				// clear the copy
+				System::Exec(rmdirCommand, copyDir + " /s /q");
 			}
 		}
 		else
