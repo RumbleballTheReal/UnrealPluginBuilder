@@ -102,6 +102,15 @@ int main(int argCount, char** args)
 	vector<string> minorVersionsAsString;
 	ParseToArray(inString, ",", minorVersionsAsString);
 
+	cout << "Ready for Marketplace deployment (Remove Binaries/Intermediate and zip it up)? (y/n): ";
+	getline(cin, inString);
+	if (!(Compare(inString, string("y")) || Compare(inString, string("n"))))
+	{
+		cout << "Invalid input. Aborting";
+		System::Pause();
+	}
+	bool bReadyForMarketplace = Compare(inString, string("y"));
+
 	if (minorVersionsAsString.size() == 0)
 	{
 		cout << "No minor versions specified!" << endl;
@@ -160,6 +169,22 @@ int main(int argCount, char** args)
 				// Remove the output folder for the specific version
 				string rmdirCommand("rmdir");
 				System::Exec(rmdirCommand, outputDir + " /s");
+			}
+
+			if (bReadyForMarketplace)
+			{
+				cout << "Making the out reading for marketplace\n";
+
+				// Remove binaries and intermediate directory from packaged folder
+				string rmdirCommand("rmdir");
+				string binariesDir = outputDir + ("\\Binaries");
+				string intermediateDir = outputDir + ("\\Intermediate");
+				System::Exec(rmdirCommand, binariesDir + " /s /q");
+				System::Exec(rmdirCommand, intermediateDir + " /s /q");
+				
+				// zip it up
+				//start powershell "Compress-Archive -Path "C:\Users\vr3\Desktop\test" -DestinationPath C:\Users\vr3\Desktop\test.zip"
+				System::Exec("start", "powershell \"Compress-Archive -Path " + outputDir + " -DestinationPath " + outputDir + ".zip\"");
 			}
 		}
 		else
