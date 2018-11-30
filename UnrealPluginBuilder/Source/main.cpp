@@ -163,36 +163,40 @@ int main(int argCount, char** args)
 			execRet = System::Exec(runUATbatch, arguments);
 			cout << "Process returned with " << execRet << endl;
 
-			// In case the build failed
-			if (execRet != 0)
+			
+			if (execRet == 0)
 			{
+				// In case the build succeeded
+				if (bReadyForMarketplace)
+				{
+					cout << "Making the out reading for marketplace\n";
+
+					// copy the output
+					string copyDir;
+					copyDir.append(workingDirectory).append("\\").append(GetPluginNameFromDirectory(pluginDir));
+					System::Exec("robocopy", outputDir + " " + copyDir + " /s");
+
+					// Remove binaries and intermediate directory from copied version
+					string rmdirCommand("rmdir");
+					string binariesDir = copyDir + ("\\Binaries");
+					string intermediateDir = copyDir + ("\\Intermediate");
+					System::Exec(rmdirCommand, binariesDir + " /s /q");
+					System::Exec(rmdirCommand, intermediateDir + " /s /q");
+
+					// zip it up
+					// powershell "Compress-Archive -Path "C:\Users\vr3\Desktop\test" -DestinationPath C:\Users\vr3\Desktop\test.zip"
+					System::Exec("powershell", "\"Compress-Archive -Path " + copyDir + " -DestinationPath " + outputDir + ".zip\"");
+
+					// clear the copy
+					System::Exec(rmdirCommand, copyDir + " /s /q");
+				}
+			}
+			else
+			{
+				// In case the build failed
 				// Remove the output folder for the specific version
 				string rmdirCommand("rmdir");
 				System::Exec(rmdirCommand, outputDir + " /s");
-			}
-
-			if (bReadyForMarketplace)
-			{
-				cout << "Making the out reading for marketplace\n";
-
-				// copy the output
-				string copyDir;
-				copyDir.append(workingDirectory).append("\\").append(GetPluginNameFromDirectory(pluginDir));
-				System::Exec("robocopy", outputDir + " " + copyDir + " /s");
-							   
-				// Remove binaries and intermediate directory from copied version
-				string rmdirCommand("rmdir");
-				string binariesDir = copyDir + ("\\Binaries");
-				string intermediateDir = copyDir + ("\\Intermediate");
-				System::Exec(rmdirCommand, binariesDir + " /s /q");
-				System::Exec(rmdirCommand, intermediateDir + " /s /q");
-				
-				// zip it up
-				// powershell "Compress-Archive -Path "C:\Users\vr3\Desktop\test" -DestinationPath C:\Users\vr3\Desktop\test.zip"
-				System::Exec("powershell", "\"Compress-Archive -Path " + copyDir + " -DestinationPath " + outputDir + ".zip\"");
-
-				// clear the copy
-				System::Exec(rmdirCommand, copyDir + " /s /q");
 			}
 		}
 		else
