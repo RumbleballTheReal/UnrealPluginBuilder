@@ -104,12 +104,12 @@ int main(int argCount, char** args)
 
 	cout << "Ready for Marketplace deployment (Remove Binaries/Intermediate and zip it up)? (y/n): ";
 	getline(cin, inString);
-	if (!(Compare(inString, string("y")) || Compare(inString, string("n"))))
+	if (!(Equal(inString, string("y")) || Equal(inString, string("n"))))
 	{
 		cout << "Invalid input. Aborting";
 		System::Pause();
 	}
-	bool bReadyForMarketplace = Compare(inString, string("y"));
+	bool bReadyForMarketplace = Equal(inString, string("y"));
 
 	if (minorVersionsAsString.size() == 0)
 	{
@@ -184,7 +184,6 @@ int main(int argCount, char** args)
 					System::Exec(rmdirCommand, intermediateDir + " /s /q");
 
 					// zip it up
-					// powershell "Compress-Archive -Path "C:\Users\vr3\Desktop\test" -DestinationPath C:\Users\vr3\Desktop\test.zip"
 					System::Exec("powershell", "\"Compress-Archive -Path " + copyDir + " -DestinationPath " + outputDir + ".zip\"");
 
 					// clear the copy
@@ -205,13 +204,7 @@ int main(int argCount, char** args)
 			System::Pause();
 			return ERetVal::RT_FileError;
 		}
-
-	
-
 	}
-
-
-
 	
 	System::Pause();
 	return ERetVal::RT_Success;

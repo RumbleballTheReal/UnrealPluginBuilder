@@ -9,7 +9,7 @@
 
 using namespace std;
 
-bool Compare(const string& s1, const string& s2)
+bool Equal(const string& s1, const string& s2)
 {
 	return s1.compare(s2) == 0 ? true : false; // result of 0 mean equal. WTF!!!
 }
