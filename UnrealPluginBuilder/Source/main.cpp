@@ -166,6 +166,9 @@ int main(int argCount, char** args)
 			
 			if (execRet == 0)
 			{
+				// Copy over files next to the .uplugin file (can be licenses, changelogs, ...)
+				System::Exec("robocopy", pluginDir + " " + outputDir);
+
 				// In case the build succeeded
 				if (bReadyForMarketplace)
 				{

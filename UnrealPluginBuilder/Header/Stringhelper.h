@@ -11,7 +11,7 @@ using namespace std;
 
 bool Equal(const string& s1, const string& s2)
 {
-	return s1.compare(s2) == 0 ? true : false; // result of 0 mean equal. WTF!!!
+	return s1.compare(s2) == 0 ? true : false;
 }
 
 string ToString(const ifstream& fileStream)
@@ -36,8 +36,8 @@ void ParseToArray(const string& str, const string& delimiter, vector<string>& ou
 		return;
 	}
 
-	uint32 delimiterLocation = 0;
-	uint32 afterLastDelimiter = 0;
+	size_t delimiterLocation = 0;
+	size_t afterLastDelimiter = 0;
 
 	while (delimiterLocation != string::npos && delimiterLocation != str.length() - 1)
 	{
