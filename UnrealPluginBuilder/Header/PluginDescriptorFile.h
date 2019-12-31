@@ -31,10 +31,15 @@ public:
 	 */
 	bool ExchangeEngineVersion(const uint32 majorVersion, const uint32 minorVersion)
 	{
-		bool bRetVal = false;
-
 		size_t beginLineEngineVersion = originalPluginDescriptorText.find("EngineVersion");
 		size_t endLineEngineVersion = originalPluginDescriptorText.find("\n", beginLineEngineVersion);
+
+		if (beginLineEngineVersion == endLineEngineVersion)
+		{
+			cout << "Plugin descriptor file does not contain line: \"EngineVersion\": \"x.y\"" << endl;
+			System::Pause();
+			return false;
+		}
 
 		string modifiedDescriptorText;
 		// If we have found the EngineVersion line
@@ -49,7 +54,7 @@ public:
 			// End of file after EngineVersion line
 			modifiedDescriptorText.append(originalPluginDescriptorText.substr(endLineEngineVersion + 1));
 		}
-
+	
 		if (modifiedDescriptorText.length() > 0)
 		{
 			ofstream outFile(file, std::ios::trunc);
@@ -60,7 +65,7 @@ public:
 			outFile.close();
 		}
 
-		return bRetVal;
+		return true;
 	}
 
 	~PluginDescriptorFile()

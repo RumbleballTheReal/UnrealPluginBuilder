@@ -12,7 +12,7 @@
 using namespace std;
 
 
-#define YOUREPICGAMESDIRECTORY "C:\\Program Files\\Epic Games" 
+#define YOUREPICGAMESDIRECTORY "F:\\Program Files\\EpicGames" 
 
 
 enum ERetVal
@@ -197,6 +197,7 @@ int main(int argCount, char** args)
 			{
 				// In case the build failed
 				// Remove the output folder for the specific version
+				cout << "Build failed. Remove the output folder for the current version?" << endl;
 				string rmdirCommand("rmdir");
 				System::Exec(rmdirCommand, outputDir + " /s");
 			}
