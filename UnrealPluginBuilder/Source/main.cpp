@@ -40,14 +40,12 @@ string GetPluginNameFromDirectory(const string& pluginDir)
 	return pluginDir.substr(slashDelimiter);
 }
 
-string BuildPluginDescriptorFilePath(const string& pluginDir)
+string BuildPluginDescriptorFilePath(const string& pluginDir, const string& pluginName)
 {
 	string out = pluginDir;
-	out.append("\\").append(GetPluginNameFromDirectory(pluginDir)).append(".uplugin");
+	out.append("\\").append(pluginName).append(".uplugin");
 	return out;
 }
-
-
 
 
 int main(int argCount, char** args)
@@ -71,10 +69,10 @@ int main(int argCount, char** args)
 	cout << "Plugin to build: " << pluginDir << endl << endl;
 
 	// check for plugin file
-	PluginDescriptorFile pluginDescriptorFile(BuildPluginDescriptorFilePath(pluginDir));
+	PluginDescriptorFile pluginDescriptorFile(BuildPluginDescriptorFilePath(pluginDir, GetPluginNameFromDirectory(pluginDir)));
 	if (!pluginDescriptorFile.IsFileOpen())
 	{
-		cout << "Could not open plugin descriptor file! Filename: " << BuildPluginDescriptorFilePath(pluginDir) << endl;
+		cout << "Could not open plugin descriptor file! Filename: " << pluginDescriptorFile.GetFile() << endl;
 		cout << "Is the file write protected?" << endl;
 		System::Pause();
 		return ERetVal::RT_FileError;
@@ -83,7 +81,7 @@ int main(int argCount, char** args)
 	{
 		cout << "Plugin descriptor file found and opened." << endl;
 		
-		cout << pluginDescriptorFile.GetOriginalContent() << endl;
+		cout << pluginDescriptorFile.GetOriginalContent() << endl << endl;
 	}
 
 	cout << "Enter UnrealEngine Major version: ";
@@ -132,6 +130,22 @@ int main(int argCount, char** args)
 		cout << "UE" << majorVersion << "." << minor << endl;
 	}
 
+	string workingDirectory;
+	{
+		vector<string> temp;
+		ParseToArray(args[0], ".", temp);
+		workingDirectory = temp[0];
+	}
+
+	// Create a intermediate plugin copy to not modify the source
+	string intermediateCopy;
+	intermediateCopy.append(workingDirectory).append("\\IntermediateCopy");
+	// Make sure no existing intermediate exists
+	cout << "Clearing old intermediate copy" << endl;
+	System::Exec("rmdir", intermediateCopy + " /s /q");
+	cout << "Creating new intermediate copy" << endl;
+	System::Exec("robocopy", pluginDir + " " + intermediateCopy + " /s");
+
 	for (const uint32& minor : minorVersions)
 	{
 		cout << endl << endl << "Building Plugin for version UE" << majorVersion << "." << minor << endl;
@@ -143,18 +157,15 @@ int main(int argCount, char** args)
 		if(FileExists(runUATbatch))
 		{
 			pluginDescriptorFile.ExchangeEngineVersion(majorVersion, minor);
-	
-			string workingDirectory;
-			{
-				vector<string> temp;
-				ParseToArray(args[0], ".", temp);
-				workingDirectory = temp[0];
-			}
+			pluginDescriptorFile.WriteModifiedFileToDirectory(intermediateCopy);
 
 			string outputDir;
 			outputDir.append(workingDirectory).append("\\").append(GetPluginNameFromDirectory(pluginDir)).append(to_string(majorVersion)).append(to_string(minor));
 			string arguments;
-			arguments.append("BuildPlugin -Plugin=\"").append(BuildPluginDescriptorFilePath(pluginDir)).append("\" -package=\"").append(outputDir).append("\"").append(" -rocket");
+			arguments.append("BuildPlugin -Plugin=\"").append(BuildPluginDescriptorFilePath(intermediateCopy, GetPluginNameFromDirectory(pluginDir))).append("\" -package=\"").append(outputDir).append("\"").append(" -rocket");
+
+			cout << "Deleting old output directory " << outputDir << endl;
+			System::Exec("rmdir", outputDir + " /s /q");
 
 			cout << "Command: " << runUATbatch << endl;
 			cout << "Arguments: " << arguments << endl;
@@ -162,17 +173,17 @@ int main(int argCount, char** args)
 			int execRet = 0;
 			execRet = System::Exec(runUATbatch, arguments);
 			cout << "Process returned with " << execRet << endl;
-
 			
 			if (execRet == 0)
 			{
 				// Copy over files next to the .uplugin file (can be licenses, changelogs, ...)
-				System::Exec("robocopy", pluginDir + " " + outputDir);
+				// Note: /XO options prevents copy of older files. That is the case for .uplugin file
+				System::Exec("robocopy", pluginDir + " " + outputDir + " /XO");
 
 				// In case the build succeeded
 				if (bReadyForMarketplace)
 				{
-					cout << "Making the out reading for marketplace\n";
+					cout << "Creating zipup copy for marketplace\n";
 
 					// copy the output
 					string copyDir;
@@ -189,6 +200,8 @@ int main(int argCount, char** args)
 					// zip it up
 					System::Exec("powershell", "\"Compress-Archive -Path " + copyDir + " -DestinationPath " + outputDir + ".zip\"");
 
+					cout << "Deleting zipup copy for marketplace\n";
+
 					// clear the copy
 					System::Exec(rmdirCommand, copyDir + " /s /q");
 				}
@@ -204,11 +217,13 @@ int main(int argCount, char** args)
 		}
 		else
 		{
-			cout << "Could not open runUAT.bat file! File: " << runUATbatch << endl;
+			cout << "Could not find runUAT.bat file! File: " << runUATbatch << endl;
 			System::Pause();
-			return ERetVal::RT_FileError;
 		}
 	}
+
+	cout << "Removing intermediate copy" << endl;
+	System::Exec("rmdir", intermediateCopy + " /s /q");
 	
 	System::Pause();
 	return ERetVal::RT_Success;
