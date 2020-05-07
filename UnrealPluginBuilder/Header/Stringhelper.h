@@ -52,3 +52,8 @@ void ParseToArray(const string& str, const string& delimiter, vector<string>& ou
 	}
 }
 
+string WrapWithQuotationMarks(const string& inString)
+{
+	return "\"" + inString + "\"";
+}
+

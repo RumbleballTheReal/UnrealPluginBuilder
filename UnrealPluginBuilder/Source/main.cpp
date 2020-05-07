@@ -137,14 +137,16 @@ int main(int argCount, char** args)
 		workingDirectory = temp[0];
 	}
 
+	System::Pause();
+
 	// Create a intermediate plugin copy to not modify the source
 	string intermediateCopy;
 	intermediateCopy.append(workingDirectory).append("\\IntermediateCopy");
 	// Make sure no existing intermediate exists
 	cout << "Clearing old intermediate copy" << endl;
-	System::Exec("rmdir", intermediateCopy + " /s /q");
+	System::Exec("rmdir", WrapWithQuotationMarks(intermediateCopy) + " /s /q");
 	cout << "Creating new intermediate copy" << endl;
-	System::Exec("robocopy", pluginDir + " " + intermediateCopy + " /s");
+	System::Exec("robocopy", WrapWithQuotationMarks(pluginDir) + " " + WrapWithQuotationMarks(intermediateCopy) + " /s");
 
 	for (const uint32& minor : minorVersions)
 	{
@@ -165,7 +167,7 @@ int main(int argCount, char** args)
 			arguments.append("BuildPlugin -Plugin=\"").append(BuildPluginDescriptorFilePath(intermediateCopy, GetPluginNameFromDirectory(pluginDir))).append("\" -package=\"").append(outputDir).append("\"").append(" -rocket");
 
 			cout << "Deleting old output directory " << outputDir << endl;
-			System::Exec("rmdir", outputDir + " /s /q");
+			System::Exec("rmdir", WrapWithQuotationMarks(outputDir) + " /s /q");
 
 			cout << "Command: " << runUATbatch << endl;
 			cout << "Arguments: " << arguments << endl;
@@ -178,7 +180,7 @@ int main(int argCount, char** args)
 			{
 				// Copy over files next to the .uplugin file (can be licenses, changelogs, ...)
 				// Note: /XO options prevents copy of older files. That is the case for .uplugin file
-				System::Exec("robocopy", pluginDir + " " + outputDir + " /XO");
+				System::Exec("robocopy", WrapWithQuotationMarks(pluginDir) + " " + WrapWithQuotationMarks(outputDir) + " /XO");
 
 				// In case the build succeeded
 				if (bReadyForMarketplace)
@@ -188,22 +190,22 @@ int main(int argCount, char** args)
 					// copy the output
 					string copyDir;
 					copyDir.append(workingDirectory).append("\\").append(GetPluginNameFromDirectory(pluginDir));
-					System::Exec("robocopy", outputDir + " " + copyDir + " /s");
+					System::Exec("robocopy", WrapWithQuotationMarks(outputDir) + " " + WrapWithQuotationMarks(copyDir) + " /s");
 
 					// Remove binaries and intermediate directory from copied version
 					string rmdirCommand("rmdir");
 					string binariesDir = copyDir + ("\\Binaries");
 					string intermediateDir = copyDir + ("\\Intermediate");
-					System::Exec(rmdirCommand, binariesDir + " /s /q");
-					System::Exec(rmdirCommand, intermediateDir + " /s /q");
+					System::Exec(rmdirCommand, WrapWithQuotationMarks(binariesDir) + " /s /q");
+					System::Exec(rmdirCommand, WrapWithQuotationMarks(intermediateDir) + " /s /q");
 
 					// zip it up
-					System::Exec("powershell", "\"Compress-Archive -Path " + copyDir + " -DestinationPath " + outputDir + ".zip\"");
+					System::Exec("powershell", "\"Compress-Archive -Path " + WrapWithQuotationMarks(copyDir) + " -DestinationPath " + WrapWithQuotationMarks(outputDir) + ".zip\"");
 
 					cout << "Deleting zipup copy for marketplace\n";
 
 					// clear the copy
-					System::Exec(rmdirCommand, copyDir + " /s /q");
+					System::Exec(rmdirCommand, WrapWithQuotationMarks(copyDir) + " /s /q");
 				}
 			}
 			else
@@ -212,7 +214,7 @@ int main(int argCount, char** args)
 				// Remove the output folder for the specific version
 				cout << "Build failed. Remove the output folder for the current version?" << endl;
 				string rmdirCommand("rmdir");
-				System::Exec(rmdirCommand, outputDir + " /s");
+				System::Exec(rmdirCommand, WrapWithQuotationMarks(outputDir) + " /s");
 			}
 		}
 		else
@@ -223,7 +225,7 @@ int main(int argCount, char** args)
 	}
 
 	cout << "Removing intermediate copy" << endl;
-	System::Exec("rmdir", intermediateCopy + " /s /q");
+	System::Exec("rmdir", WrapWithQuotationMarks(intermediateCopy) + " /s /q");
 	
 	System::Pause();
 	return ERetVal::RT_Success;
